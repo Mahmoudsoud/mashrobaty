@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d6a58">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>body{margin:0}</style>
+</head>
+<body>
+<title>مشروباتي</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap">
+<style>
+/* Layout: sticky summary header (unpaid total + last payment), three tabs at the bottom, card grid for orders. */
+:root{
+  --bg:#edf1ee;--surface:#ffffff;--fg:#15201c;--muted:#58675f;--line:#d5dcd7;
+  --accent:#0d6a58;--accent-fg:#ffffff;--soft:#dcebe6;
+  --pay:#f0b04a;--pay-fg:#2b1d02;
+  --bad:#b2362b;--badbg:#fbe4e0;--ok:#1b7746;--okbg:#dff2e6;--warn:#8a5a06;--warnbg:#fbefd2;
+  --ov:rgba(8,16,13,.55);
+  --font:'Cairo',Tahoma,system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1512;--surface:#16201c;--fg:#e5eee9;--muted:#9bb0a5;--line:#27362f;
+    --accent:#46c3a3;--accent-fg:#05211a;--soft:#1d3029;
+    --pay:#e5a840;--pay-fg:#241700;
+    --bad:#ff8f80;--badbg:#3a1f1c;--ok:#77d8a2;--okbg:#17301f;--warn:#f0c46b;--warnbg:#3a2e12;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1512;--surface:#16201c;--fg:#e5eee9;--muted:#9bb0a5;--line:#27362f;
+  --accent:#46c3a3;--accent-fg:#05211a;--soft:#1d3029;
+  --pay:#e5a840;--pay-fg:#241700;
+  --bad:#ff8f80;--badbg:#3a1f1c;--ok:#77d8a2;--okbg:#17301f;--warn:#f0c46b;--warnbg:#3a2e12;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+button,input{font-family:inherit;font-size:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.in{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);padding-block:12px}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:700;font-size:15px;color:var(--muted)}
+.due-l{font-size:13px;color:var(--muted)}
+.due{font-size:30px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums}
+.last{font-size:13px;color:var(--muted);margin-top:2px}
+.btn{border:0;border-radius:12px;padding:12px 18px;font-weight:700;background:var(--accent);color:var(--accent-fg);min-height:46px}
+.btn.pay{background:var(--pay);color:var(--pay-fg)}
+.btn.bad{background:var(--bad);color:var(--surface);padding:8px 14px;min-height:40px;font-size:14px}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--line);padding:8px 14px;min-height:40px;font-size:14px}
+.btn:disabled{opacity:.45}
+main{padding-block:14px 100px;display:block}
+.bar{display:flex;gap:8px;margin-bottom:10px}
+.inp{flex:1;min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg)}
+.dayline{color:var(--muted);font-size:14px;margin-bottom:12px}
+.dayline b{color:var(--fg);font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;min-width:0}
+.card .n{font-weight:700;font-size:17px;overflow-wrap:anywhere}
+.card .p{color:var(--muted);font-size:13px;margin-bottom:10px;font-variant-numeric:tabular-nums}
+.ctr{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.ctr button{width:48px;height:48px;border:0;border-radius:14px;font-size:26px;line-height:1;font-weight:700;background:var(--accent);color:var(--accent-fg)}
+.ctr button.m{background:var(--soft);color:var(--fg)}
+.ctr span{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;min-width:28px;text-align:center}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:10px}
+.day h3{margin:0 0 6px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:16px}
+.day h3 .tot{font-variant-numeric:tabular-nums;white-space:nowrap}
+.row{display:flex;justify-content:space-between;gap:8px;font-size:14px;padding:3px 0;color:var(--muted)}
+.row span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{font-size:12px;padding:2px 9px;border-radius:999px;font-weight:600;margin-inline-start:6px}
+.tag.u{background:var(--badbg);color:var(--bad)}
+.tag.p{background:var(--okbg);color:var(--ok)}
+.tag.h{background:var(--warnbg);color:var(--warn)}
+h2{font-size:16px;margin:20px 0 8px}
+.empty{text-align:center;color:var(--muted);padding:28px 8px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.form{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.form .n{flex:2 1 140px}.form .p{flex:1 1 80px}
+.item{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 12px;margin-bottom:8px}
+.item span{min-width:0;overflow-wrap:anywhere}
+.note{font-size:13px;color:var(--muted);margin-top:14px}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
+nav button{flex:1;padding:14px 4px;border:0;background:none;color:var(--muted);font-weight:600;border-top:3px solid transparent}
+nav button.on{color:var(--accent);border-top-color:var(--accent)}
+.sheet{position:fixed;inset:0;z-index:20;background:var(--ov);display:flex;align-items:flex-end}
+.sheet>div{background:var(--surface);width:100%;border-radius:20px 20px 0 0;padding:18px max(16px,env(safe-area-inset-left,0px)) calc(18px + env(safe-area-inset-bottom,0px))}
+.sheet h3{margin:0 0 4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.chip{padding:10px 14px;border-radius:999px;border:1px solid var(--accent);color:var(--accent);background:var(--surface);font-weight:600}
+.chip.on{background:var(--accent);color:var(--accent-fg)}
+.acts{display:flex;gap:8px;margin-top:14px}
+.acts .btn{flex:1}
+.acts .btn.ghost{color:var(--fg)}
+</style>
+
+<div id="app" dir="rtl" lang="ar">
+  <header class="top"><div class="in">
+    <div class="top-row">
+      <div>
+        <div class="brand">مشروباتي</div>
+        <div class="due-l">غير مدفوع</div>
+        <div class="due"><span id="due">0</span> <span style="font-size:16px;font-weight:600">ج</span></div>
+      </div>
+      <button class="btn pay" id="payBtn" type="button">سجّل دفع</button>
+    </div>
+    <div class="last" id="last"></div>
+  </div></header>
+  <main class="in" id="main"></main>
+  <nav>
+    <button type="button" data-act="tab" data-t="orders" class="on">الطلبات</button>
+    <button type="button" data-act="tab" data-t="hist">السجل</button>
+    <button type="button" data-act="tab" data-t="menu">المشروبات</button>
+  </nav>
+  <div class="sheet" id="sheet" hidden><div>
+    <h3>تسجيل دفع</h3>
+    <div id="sheetInfo" style="color:var(--muted)"></div>
+    <div class="chips" id="chips"></div>
+    <label for="payDate" style="font-size:14px;color:var(--muted)">تاريخ الدفع</label>
+    <input class="inp" style="width:100%;margin-top:4px" type="date" id="payDate">
+    <div class="acts">
+      <button class="btn" id="okPay" type="button">تأكيد الدفع</button>
+      <button class="btn ghost" id="noPay" type="button">إلغاء</button>
+    </div>
+  </div></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+var METHODS=['كاش','فودافون كاش','إنستاباي','تحويل بنكي'];
+var LS='drinksApp_v2';
+var maps={drinks:{},entries:{},payments:{}};
+var db=null,mode='loading',loaded={},loadErr='',slow=false;
+var tab='orders',method=METHODS[0],delId=null,undoId=null;
+var chains={};
+
+function today(){return new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10)}
+var selDate=today();
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function fmt(n){return String(Math.round(n*100)/100)}
+function nid(){return 'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function fmtDate(d){
+  try{return new Date(d+'T12:00:00').toLocaleDateString('ar-EG-u-nu-latn',{weekday:'long',day:'numeric',month:'long'})}catch(e){return d}
+}
+function ago(d){
+  var n=Math.round((new Date(today()+'T12:00:00')-new Date(d+'T12:00:00'))/864e5);
+  if(n<=0)return 'النهاردة';
+  if(n===1)return 'امبارح';
+  return 'من '+n+' يوم';
+}
+function vals(m){return Object.keys(m).map(function(k){return m[k]})}
+function drinks(){return vals(maps.drinks).sort(function(a,b){return (a.ord||0)-(b.ord||0)})}
+function entries(){return vals(maps.entries)}
+function payments(){return vals(maps.payments).sort(function(a,b){return (a.ts||0)-(b.ts||0)})}
+function due(){return entries().filter(function(e){return !e.payId}).reduce(function(a,e){return a+e.price*e.qty},0)}
+function lastPay(){var p=payments();return p.length?p[p.length-1]:null}
+
+/* storage: shared db when the viewer grants it, otherwise this device only */
+function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(maps))}catch(e){}}
+function loadLocal(){
+  try{var s=JSON.parse(localStorage.getItem(LS)||'null');if(s&&s.drinks&&s.entries&&s.payments)maps=s}catch(e){}
+}
+function persist(col,id,obj){
+  if(mode!=='db'){saveLocal();return}
+  var key=col+'/'+id;
+  var run=function(){var ref=db.collection(col).doc(id);return obj?ref.set(obj):ref.delete()};
+  chains[key]=(chains[key]||Promise.resolve()).then(run).catch(function(){loadErr='تعذّر حفظ آخر تعديل، جرّب تاني.';render()});
+}
+
+/* actions */
+function addOne(did){
+  var d=maps.drinks[did];if(!d)return;
+  var e=entries().filter(function(x){return x.date===selDate&&x.drinkId===did&&!x.payId})[0];
+  if(e){e.qty++}
+  else{e={id:nid(),date:selDate,drinkId:did,name:d.name,price:d.price,qty:1,payId:null};maps.entries[e.id]=e}
+  persist('entries',e.id,e);render();
+}
+function subOne(did){
+  var e=entries().filter(function(x){return x.date===selDate&&x.drinkId===did&&!x.payId})[0];
+  if(!e)return;
+  e.qty--;
+  if(e.qty<=0){delete maps.entries[e.id];persist('entries',e.id,null)}else persist('entries',e.id,e);
+  render();
+}
+function confirmPay(){
+  var unpaid=entries().filter(function(e){return !e.payId});
+  if(!unpaid.length)return;
+  var amount=unpaid.reduce(function(a,e){return a+e.price*e.qty},0);
+  var p={id:nid(),date:$('payDate').value||today(),method:method,amount:amount,ts:Date.now()};
+  maps.payments[p.id]=p;persist('payments',p.id,p);
+  unpaid.forEach(function(e){e.payId=p.id;persist('entries',e.id,e)});
+  $('sheet').hidden=true;render();
+}
+function undoPay(pid){
+  entries().forEach(function(e){if(e.payId===pid){e.payId=null;persist('entries',e.id,e)}});
+  delete maps.payments[pid];persist('payments',pid,null);
+  undoId=null;render();
+}
+function removeDrink(did){
+  delete maps.drinks[did];persist('drinks',did,null);delId=null;render();
+}
+function addDrink(){
+  var n=($('nn').value||'').trim(),p=parseFloat($('np').value);
+  if(!n||isNaN(p)||p<0){loadErr='اكتب اسم المشروب وسعره.';render();return}
+  loadErr='';
+  var d={id:nid(),name:n,price:p,ord:Date.now()};
+  maps.drinks[d.id]=d;persist('drinks',d.id,d);
+  $('nn').value='';$('np').value='';render();
+}
+
+/* views */
+function head(){
+  $('due').textContent=fmt(due());
+  var p=lastPay();
+  $('last').textContent=p?('آخر دفع: '+fmtDate(p.date)+' ('+ago(p.date)+') · '+p.method):'لسه مفيش دفع متسجّل';
+}
+function viewOrders(){
+  var h='<div class="bar"><input class="inp" type="date" id="d" value="'+selDate+'" aria-label="تاريخ الطلبات">';
+  if(selDate!==today())h+='<button class="btn ghost" type="button" data-act="today">اليوم</button>';
+  h+='</div>';
+  var total=entries().filter(function(e){return e.date===selDate}).reduce(function(a,e){return a+e.price*e.qty},0);
+  h+='<div class="dayline">'+esc(fmtDate(selDate))+' · إجمالي اليوم <b>'+fmt(total)+'</b> ج</div>';
+  var ds=drinks();
+  if(!ds.length){
+    return h+'<div class="empty"><div>لسه مفيش مشروبات. ضيف اللي بتطلبه وسعره مرة واحدة وبعدها هتلاقيه هنا.</div><button class="btn" type="button" data-act="tab" data-t="menu">ضيف مشروب</button></div>';
+  }
+  h+='<div class="grid">';
+  ds.forEach(function(d){
+    var c=entries().filter(function(e){return e.date===selDate&&e.drinkId===d.id}).reduce(function(a,e){return a+e.qty},0);
+    h+='<div class="card"><div class="n">'+esc(d.name)+'</div><div class="p">'+fmt(d.price)+' ج</div>'+
+       '<div class="ctr"><button type="button" class="m" data-act="sub" data-id="'+d.id+'" aria-label="أنقص">−</button><span>'+c+'</span>'+
+       '<button type="button" data-act="add" data-id="'+d.id+'" aria-label="زوّد">+</button></div></div>';
+  });
+  return h+'</div>';
+}
+function viewHist(){
+  var es=entries(),h='';
+  var dates=[];es.forEach(function(e){if(dates.indexOf(e.date)<0)dates.push(e.date)});
+  dates.sort().reverse();
+  if(!dates.length)h+='<div class="empty">مفيش طلبات متسجّلة لسه.</div>';
+  dates.forEach(function(dt){
+    var day=es.filter(function(e){return e.date===dt});
+    var tot=day.reduce(function(a,e){return a+e.price*e.qty},0);
+    var np=day.filter(function(e){return e.payId}).length;
+    var tag=np===day.length?'<span class="tag p">مدفوع</span>':(np===0?'<span class="tag u">غير مدفوع</span>':'<span class="tag h">مدفوع جزئياً</span>');
+    h+='<div class="day"><h3><span>'+esc(fmtDate(dt))+'</span><span class="tot">'+fmt(tot)+' ج'+tag+'</span></h3>';
+    day.forEach(function(e){
+      h+='<div class="row"><span>'+esc(e.name)+' × '+e.qty+'</span><span>'+fmt(e.price*e.qty)+' ج'+(e.payId?' · مدفوع':'')+'</span></div>';
+    });
+    h+='</div>';
+  });
+  h+='<h2>سجل الدفع</h2>';
+  var ps=payments().reverse();
+  if(!ps.length)h+='<div class="empty">لسه مفيش دفع متسجّل.</div>';
+  ps.forEach(function(p){
+    var armed=undoId===p.id;
+    h+='<div class="day"><h3><span>'+esc(fmtDate(p.date))+'</span><span class="tot">'+fmt(p.amount)+' ج</span></h3>'+
+       '<div class="row"><span>'+esc(p.method)+'</span><span>'+ago(p.date)+'</span></div>'+
+       '<div style="margin-top:8px"><button type="button" class="btn '+(armed?'bad':'ghost')+'" data-act="'+(armed?'undo-ok':'undo')+'" data-id="'+p.id+'">'+(armed?'تأكيد التراجع عن الدفع':'تراجع عن الدفع')+'</button></div></div>';
+  });
+  return h;
+}
+function viewMenu(){
+  var h='<div class="form"><input class="inp n" id="nn" placeholder="اسم المشروب" autocomplete="off"><input class="inp p" id="np" type="number" inputmode="decimal" placeholder="السعر"><button class="btn" type="button" data-act="addDrink">إضافة</button></div>';
+  var ds=drinks();
+  if(!ds.length)h+='<div class="empty">المشروبات اللي هتضيفها هتظهر هنا.</div>';
+  ds.forEach(function(d){
+    var armed=delId===d.id;
+    h+='<div class="item"><span>'+esc(d.name)+' · '+fmt(d.price)+' ج</span>'+
+       '<button type="button" class="btn '+(armed?'bad':'ghost')+'" data-act="'+(armed?'del-ok':'del')+'" data-id="'+d.id+'">'+(armed?'تأكيد الحذف':'حذف')+'</button></div>';
+  });
+  h+='<div class="note">حذف مشروب مش بيمسحه من الطلبات القديمة في السجل. '+
+     (mode==='db'?'البيانات محفوظة في حسابك وتفتح من أي جهاز.':'البيانات محفوظة على الجهاز ده بس.')+'</div>';
+  return h;
+}
+function render(){
+  head();
+  var m=$('main'),keep={};
+  ['nn','np'].forEach(function(k){var el=$(k);if(el)keep[k]=el.value});
+  var h='';
+  if(mode==='loading'||(mode==='db'&&!(loaded.drinks&&loaded.entries&&loaded.payments)&&!slow&&!loadErr)){
+    h='<div class="empty">جاري تحميل بياناتك…</div>';
+  }else{
+    if(mode==='db'&&slow&&!(loaded.drinks&&loaded.entries&&loaded.payments))h+='<div class="note">مش قادر أوصل للبيانات دلوقتي. تأكد من النت.</div>';
+    if(loadErr)h+='<div class="note" style="color:var(--bad)">'+esc(loadErr)+'</div>';
+    h+=tab==='orders'?viewOrders():(tab==='hist'?viewHist():viewMenu());
+  }
+  m.innerHTML=h;
+  Object.keys(keep).forEach(function(k){var el=$(k);if(el)el.value=keep[k]});
+  var bs=document.querySelectorAll('nav button');
+  for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',bs[i].getAttribute('data-t')===tab);
+}
+function chips(){
+  $('chips').innerHTML=METHODS.map(function(x){return '<button type="button" class="chip'+(x===method?' on':'')+'" data-m="'+x+'">'+x+'</button>'}).join('');
+}
+function openPay(){
+  var d=due();
+  $('sheetInfo').textContent=d?('المبلغ المستحق: '+fmt(d)+' ج'):'مفيش حاجة مستحقة دلوقتي.';
+  $('okPay').disabled=!d;
+  $('payDate').value=today();chips();$('sheet').hidden=false;
+}
+
+/* events */
+$('app').addEventListener('click',function(e){
+  var t=e.target.closest('[data-act]');
+  if(t){
+    var a=t.getAttribute('data-act'),id=t.getAttribute('data-id');
+    if(a==='add')addOne(id);
+    else if(a==='sub')subOne(id);
+    else if(a==='tab'){tab=t.getAttribute('data-t');delId=null;undoId=null;render()}
+    else if(a==='today'){selDate=today();render()}
+    else if(a==='addDrink')addDrink();
+    else if(a==='del'){delId=id;render();setTimeout(function(){if(delId===id){delId=null;render()}},4000)}
+    else if(a==='del-ok')removeDrink(id);
+    else if(a==='undo'){undoId=id;render();setTimeout(function(){if(undoId===id){undoId=null;render()}},4000)}
+    else if(a==='undo-ok')undoPay(id);
+    return;
+  }
+  var c=e.target.closest('[data-m]');
+  if(c){method=c.getAttribute('data-m');chips()}
+});
+$('app').addEventListener('change',function(e){
+  if(e.target.id==='d'){selDate=e.target.value||today();render()}
+});
+$('payBtn').addEventListener('click',openPay);
+$('noPay').addEventListener('click',function(){$('sheet').hidden=true});
+$('okPay').addEventListener('click',confirmPay);
+
+/* start */
+render();
+function subscribe(){
+  var t=setTimeout(function(){slow=true;render()},10000);
+  ['drinks','entries','payments'].forEach(function(col){
+    db.collection(col).onSnapshot(function(s){
+      var m={};s.docs.forEach(function(d){var o=d.data()||{};o.id=d.id;m[d.id]=o});
+      maps[col]=m;loaded[col]=true;
+      if(loaded.drinks&&loaded.entries&&loaded.payments)clearTimeout(t);
+      render();
+    },function(){loadErr='تعذّر تحميل البيانات.';clearTimeout(t);render()});
+  });
+}
+(async function(){
+  var d=null;
+  try{d=(window.claude&&window.claude.use)?await window.claude.use('db'):null}catch(e){d=null}
+  if(d){db=d;mode='db';subscribe()}
+  else{mode='local';loadLocal();render()}
+})();
+})();
+</script>
+
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}</script>
+</body>
+</html>
